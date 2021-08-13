@@ -92,7 +92,7 @@ Distributed under the MIT License. See LICENSE for more information.
 
 ## Contact
 
-Name: Junjie - jjluo@umd.edu
+Name: Junjie Luo - jjluo@umd.edu
 ProjectLink: https://github.com/floydluo/GenderBiasExperimentApp
 
 

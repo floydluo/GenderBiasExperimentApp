@@ -1,9 +1,6 @@
-# Flask Quiz App
+# Experimental Quiz App for Gender Bias Identification
 
-A Fully responsive Quiz built using Python's Flask
 
- - [Report  Bug](https://github.com/thepasterover/flask-quiz-app/issues)
- - [Request Feature](https://github.com/thepasterover/flask-quiz-app/issues)
 
 Table of contents
 1. [About the project](#about-the-project)
@@ -21,7 +18,7 @@ Table of contents
 Preview:
 
 
-https://user-images.githubusercontent.com/50194033/118162704-adb19300-b43e-11eb-9399-279b4fa2afef.mp4
+<!-- https://user-images.githubusercontent.com/50194033/118162704-adb19300-b43e-11eb-9399-279b4fa2afef.mp4 -->
 
 
 This project is a fully responsive Quiz App built using Python's Flask for the backend and custom HTML CSS for the frontend.
@@ -58,23 +55,21 @@ Future Scope:
 
 ```bash
 # clone this repo
-$ git clone https://github.com/thepasterover/flask-quiz-app.git
+$ git clone https://github.com/floydluo/GenderBiasExperimentApp.git
 
 # go to the directory
-$ cd flask-quiz-app
+$ cd GenderBiasExperimentApp
 
 # use virtual env if you want
-$ virtualenv ENV && source ENV/bin/activate
+$ conda # TODO
 
 # generate static project
 $ pip install -r requirements.txt
 
 # export flask app and run
-$ set FLASK_APP=main.py
+$ export FLASK_APP=main.py # if you are in unix-like os
 $ flask run
 
-# generate static project
-$ npm run generate
 ```
 
 
@@ -97,7 +92,7 @@ Distributed under the MIT License. See LICENSE for more information.
 
 ## Contact
 
-Name: Boobalan Shettiyar - boopalanshettiyar78@gmail.com
-ProjectLink: https://github.com/thepasterover/flask-quiz-app
+Name: Junjie - jjluo@umd.edu
+ProjectLink: https://github.com/floydluo/GenderBiasExperimentApp
 
 

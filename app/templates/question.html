@@ -4,12 +4,12 @@
 {% block content %}
     <div class="ques-div">
         <form method="post" novalidate>
-            <h2 class="qnum">Question {{q.q_id}}</h2>
+            <h2 class="qnum">Question {{qid}}</h2>
             <div class="dotted-spaced"></div>
             <hr>
-            <h1 class="ques-heading">{{q.ques}}</h1>
+            <div class="ques-heading">{{a}}<span>+</span>{{b}}<span>+</span>{{c}}<span>+</span>{{d}}<span>+</span> {{e}} <span>= ?</span> </div>
             <div class="options-div">
-                {{ form.options(class="list-unstyled") }}
+                {{ form.answer(class="list-unstyled") }}
             </div>
             {{ form.submit(class="btn btn-primary btn-lg sub-btn") }}
         </form>

@@ -3,7 +3,7 @@
         {% if title %}
         <title> {{ title }} </title>
         {% else %}
-        <title> Default </title>
+        <title> EconField </title>
         {% endif %}
         
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +20,7 @@
     <body class="home-bg">
     <nav>
         <ul class="nav-links">
-            <li> <a href="{{ url_for('home') }}"> Home </a> </li>
+            <li> <a href="{{ url_for('home') }}"> EconField (Home) </a> </li>
             {% if not g.user %}
             <li> <a href="{{ url_for('login') }}"> Login </a> </li>
             {% else %}
@@ -28,15 +28,24 @@
             {% endif %}
         </ul>
     </nav>
+    
     {% with messages = get_flashed_messages() %}
     {% if messages %}
-    <ul>
-        {% for message in messages %}
-        <li>{{ message }}</li>
+    <div class="container">
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-warning">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {{ message }}
+        </div>
         {% endfor %}
-    </ul>
+    </div>
     {% endif %}
     {% endwith %}
-        {% block content %}{% endblock %}
+
+
+
+    {% block content %}{% endblock %}
+
     </body>
 </html>
+

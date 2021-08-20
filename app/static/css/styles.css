@@ -99,6 +99,24 @@ nav {
 }
 
 
+.info2-div{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+
+
+.mytype{
+    background-color: #ceb10e;
+    color: #fff;
+    font-size: 18px;
+    margin-top: 40px;
+    border-radius: 30px;
+    padding: 15px;
+    text-decoration: none;
+}
 
 /* Login Page CSS */
 
@@ -224,6 +242,12 @@ nav {
     align-items: center;
 }
 
+.at-center {
+    justify-content: center;
+    align-items: center;
+}
+
+
 .qnum {
     margin-top: 25px;
     color: #989cad;
@@ -269,8 +293,12 @@ form hr {
 } */
 
 .sub-btn {
-    display: block;
-    margin-left: auto;
+
+   display: block;
+   align-items: center;
+   justify-content: center;
+    /* display: block;
+    margin-left: auto; */
 }
 
 .check-circle{

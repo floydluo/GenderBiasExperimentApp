@@ -19,7 +19,7 @@ class User(db.Model):
 
     # relationships
     # user --> quizzes
-    quizzes = db.relationship('Quiz', backref = 'user')
+    quizzes = db.relationship('Quiz', backref = 'user', lazy = 'dynamic')
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -46,7 +46,7 @@ class Quiz(db.Model):
     # quiz --> user
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     # tasks --> quiz
-    tasks = db.relationship('Task', backref = 'quiz')
+    tasks = db.relationship('Task', backref = 'quiz', lazy = 'dynamic')
 
     def __repr__(self):
         return '<Quiz {}>'.format(self.id)
@@ -64,7 +64,7 @@ class Task(db.Model):
     # task --> quiz
     quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'))
     # anwserRecords --> task
-    answer_records =  db.relationship('AnswerRecord', backref = 'task')
+    answer_records =  db.relationship('AnswerRecord', backref = 'task', lazy = 'dynamic')
 
     def __repr__(self):
         return '<Task {}>'.format(self.id)

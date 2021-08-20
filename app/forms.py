@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField
-from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
+from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, NumberRange
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 
 from app.models import User
@@ -30,5 +30,5 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('Email already exists.')
 
 class QuestionForm(FlaskForm):
-    answer = IntegerField('Your Answer: ', validators=[DataRequired()])
+    answer = IntegerField('Your Answer: ')
     submit = SubmitField('Next')

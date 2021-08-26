@@ -59,6 +59,9 @@ class Task(db.Model):
     # task information
     task_name = db.Column(db.String(120)) # generated at the first time.
     task_type = db.Column(db.String(120)) # Piece Rate, Tournament, Self-Choose, Retro-Choose
+    start_time = db.Column(db.DateTime)
+    end_time = db.Column(db.DateTime)
+    final_status = db.Column(db.String(120))
 
     # relationships
     # task --> quiz
@@ -97,3 +100,19 @@ class AnswerRecord(db.Model):
 
     def __repr__(self):
         return '<AnswerRecord {}>'.format(self.id)
+
+
+
+# import os
+# from app import create_app, db 
+# from app.models import User, Quiz, Task, AnswerRecord 
+# from flask_migrate import Migrate
+
+# app = create_app(os.getenv('FLASK_CONFIG') or 'default')
+# migrate = Migrate(app, db)
+
+# @app.shell_context_processor
+# def make_shell_context():
+#     return dict(db = db, User = User, 
+#                 Quiz = Quiz, Task = Task, 
+#                 AnswerRecord = AnswerRecord)

@@ -7,17 +7,31 @@
             <h2 class="qnum">Question {{qid}}</h2>
             <div class="dotted-spaced"></div>
             <hr>
-            <h4 class="ques-heading">{{a}}+{{b}}+{{c}}+{{d}}+ {{e}} <span>= ?</span> </h4>
-            <div class="options-div">
-                {{ form.answer(placeholder="Your Answer", class="list-unstyled") }}
-                {% for error in form.answer.errors %}
-                <span style="color:red;"> {{ error }} </span>
-                {% endfor %}
-                
 
-            </div>
-            <hr>
-            <div>{{ form.submit(class="btn btn-primary btn-lg sub-btn") }}</div>
+            {% if tid in [1, 2, 3] and qid >= 1 %}
+                <h4 class="ques-heading">{{a}}+{{b}}+{{c}}+{{d}}+ {{e}} <span>= ?</span> </h4>
+                <div class="options-div">
+                    {{ form.answer(placeholder="Your Answer", class="list-unstyled") }}
+                    {% for error in form.answer.errors %}
+                    <span style="color:red;"> {{ error }} </span>
+                    {% endfor %}
+                </div>
+                <hr>
+                <div>{{ form.submit(class="btn btn-primary btn-lg sub-btn") }}</div>
+            {% elif tid == 3 and qid == 0 %} 
+                <h4 class="ques-heading">For this task, do you choose the payoff method</h4>
+                <div class="info2-div">
+                    <a class="mytype" href="{{ url_for('task3_choice', choice = 'choice1')}}">Method 1: Piece Rate</a> 
+                    <a class="mytype" href="{{ url_for('task3_choice', choice = 'choice2')}}">Method 2: Tournament</a> 
+            {% elif tid == 4 %} 
+                <h4 class="ques-heading">For task 1, do you choose the payoff method</h4>
+                <div class="info2-div">
+                    <a class="mytype" href="{{ url_for('quiz_task_end', choice = 'choice1')}}">Method 1: Piece Rate</a> 
+                    <a class="mytype" href="{{ url_for('quiz_task_end', choice = 'choice2')}}">Method 2: Tournament</a> 
+                </div>
+            {% else %}
+                <h4 class="ques-heading">You are in trouble here, the TID is {{tid}}</h4>
+            {% endif %}
             
         </form>
         <!-- <span class="check-circle">

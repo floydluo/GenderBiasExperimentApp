@@ -5,11 +5,20 @@ from app.forms import LoginForm, RegistrationForm, QuestionForm
 from app.models import User, Quiz, Task, AnswerRecord
 from app import db
 import random
-from datetime import datetime 
+from datetime import date, datetime 
 
 
-MAX_QID = 20
+MAX_QID = 5
 
+TID2TASKTYPE = {
+    1: 'Piece Rate',
+    2: 'Tournament',
+    3: 'Your Choice',
+    4: 'Look Back',
+}
+
+
+CLEARLIST = ['qid', 'tid', 'answer_record.id', 'user_id']
 
 @app.before_request
 def before_request():
@@ -23,10 +32,6 @@ def before_request():
         quiz = Quiz.query.filter_by(id=session['quiz.id']).first()
         g.quiz = quiz
 
-    g.current_task_type = None
-    if 'current_task_type' in session:
-        g.current_task_type = session.get('current_task_type', 1)
-
 
     g.task = None 
     if 'task.id' in session:
@@ -34,11 +39,16 @@ def before_request():
         g.task = task
 
     
+    # qid is within a task
     g.qid = None
     if 'qid' in session:
         g.qid = session.get('qid', 1)
 
-    
+    # tid is within a quiz
+    g.tid = None
+    if 'tid' in session:
+        g.tid = session.get('tid', 1)
+
     
 
 @app.route('/')
@@ -50,6 +60,10 @@ def home():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
+        
+        for i in CLEARLIST: 
+            if i in session: session.pop(i)
+
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             print(form.username.data)
@@ -64,12 +78,15 @@ def login():
         return redirect(next_page)
         # return redirect(url_for('home'))
     if g.user:
+        for i in CLEARLIST: 
+            if i in session: session.pop(i)
         return redirect(url_for('home'))
     return render_template('login.html', form=form, title='Login')
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    print(session)
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data) # fix the error.
@@ -77,6 +94,10 @@ def register():
         db.session.add(user)
         db.session.commit()
         session['user.id'] = user.id
+
+        for i in CLEARLIST: 
+            if i in session: session.pop(i)
+
         return redirect(url_for('home'))
     if g.user:
         return redirect(url_for('home'))
@@ -96,11 +117,17 @@ def logout():
     if g.task:
         session.pop('task.id', None)
         g.task = None
+    
+    
+    for i in CLEARLIST: 
+        if i in session: session.pop(i)
+    
     return redirect(url_for('home'))
 
 
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
+    print(session)
     if not g.user:
         return redirect(url_for('login'))
 
@@ -119,57 +146,181 @@ def quiz():
         # start it in the session.
         session['quiz.id'] = quiz.id
         g.quiz= quiz
+        flash('You start a new quiz [{}] now! TID is {}'.format(g.quiz.quiz_name, g.tid))
 
-        flash('You start a new quiz [{}] now!'.format(g.quiz.quiz_name))
+    # extract tid from session
+    if 'tid' not in session:
+        session['tid'] = 1
 
+    tid = session['tid'] # exist under a quiz
 
-        
-
-    return render_template('quiz.html', title='Question {}'.format(g.quiz.quiz_name))
+    return render_template('quiz.html', title='Question {}'.format(g.quiz.quiz_name), tid = tid)
 
 
 @app.route('/task-start', methods=['GET', 'POST'])
 def task_start():
+    print(session)
     flash('You are starting a task now')
 
     # generate a quiz, and a quiz id
-    task_type = g.current_task_type
+    tid = session['tid']
+    task_type = TID2TASKTYPE[tid]
     task_name = 'Q{}T{}:u{}'.format(g.quiz.quiz_name, task_type, g.user.username)
-    task = Task(task_name = task_name, task_type = task_type, quiz = quiz)
+    
+    dt = datetime.now()
+    task = Task(task_name = task_name, task_type = task_type, quiz = g.quiz, start_time = dt)
+    
+    db.session.add(task)
+    db.session.commit()
+    
     g.task = task
     
     session['task.id'] = task.id
-    session['question.id'] = 1 # start from 1
-
+    if session['tid'] in [1, 2]:
+        session['qid'] = 1
+    elif session['tid'] in [3, 4]:
+        session['qid'] = 0
+    else:
+        flash('Somehow, you are in trouble')
+    # print(session)
     return redirect(url_for('question'))
 
 
 @app.route('/task-end', methods=['GET', 'POST'])
 def task_end():
+    print(session)
+
+    dt = datetime.now()
     flash('Congrats! You current task is finished!')
-    # session['task.id'] +=1
-    # session['question.id'] = 1 # start from 1
-
-    # clear current task and question information
-    # session['task.id'] = None
-    session.pop('task.id')
-    session.pop('question.id')
-    # g.task = None
-    # session['question.id'] = None
-
+    task = g.task 
+    task.end_time = dt 
     
+    if session['tid'] in [1, 2]:
+        task.final_status = TID2TASKTYPE[session['tid']] 
+
+    db.session.add(task)
+    db.session.commit()    
+
+    session.pop('task.id')
+    session.pop('answer_record.id')
+
+    if session['tid'] in [1, 2]:
+        session['qid'] = 1
+    elif session['tid'] in [3, 4]:
+        session['qid'] = 0
+    else:
+        flash('Somehow, you are in trouble')
+    
+    session['tid'] = session['tid'] + 1
 
     return redirect(url_for('quiz'))
 
 
-@app.route('/question', methods=['GET', 'POST'])
-def question():
-    
+
+@app.route('/task3-choice/<choice>', methods=['GET', 'POST'])
+def task3_choice(choice):
+    print(session)
 
     if not g.user:
         return redirect(url_for('login'))
 
     if not g.quiz:
+        flash('No such quiz')
+        return redirect(url_for('quiz'))
+
+    if not g.task:
+        flash('No such task')
+        return redirect(url_for('quiz'))
+
+    assert g.task.task_type == TID2TASKTYPE[3]
+    assert session['tid'] == 3
+    session['qid'] = 1
+
+    dt = datetime.now()
+    
+    task = g.task
+    task.start_time = dt 
+    if choice == 'choice1':
+        task.final_status = TID2TASKTYPE[1]
+    elif choice == 'choice2':
+        task.final_status = TID2TASKTYPE[2]
+
+
+    db.session.add(task)
+    db.session.commit()    
+
+    # session.pop('quiz.id')
+    return redirect(url_for('question'))
+
+
+@app.route('/quiz-task-end/<choice>', methods=['GET', 'POST'])
+def quiz_task_end(choice):
+    print(session)
+
+    if not g.user:
+        return redirect(url_for('login'))
+
+    if not g.quiz:
+        flash('No such quiz')
+        return redirect(url_for('quiz'))
+
+    if not g.task:
+        flash('No such task')
+        return redirect(url_for('quiz'))
+
+    assert g.task.task_type == TID2TASKTYPE[4]
+    assert session['tid'] == 4
+
+    dt = datetime.now()
+    
+    task = g.task
+    task.end_time = dt 
+    if choice == 'choice1':
+        task.final_status = TID2TASKTYPE[1]
+    elif choice == 'choice2':
+        task.final_status = TID2TASKTYPE[2]
+
+    quiz = g.quiz 
+    quiz.end_time = dt 
+    quiz.finished = True 
+
+    db.session.add(task)
+    db.session.add(quiz)
+    db.session.commit()    
+
+    # session.pop('quiz.id')
+    return redirect(url_for('results'))
+
+
+@app.route('/results', methods=['GET', 'POST'])
+def results():
+    if not g.user:
+        return redirect(url_for('login'))
+
+    if not g.quiz:
+        flash('No such quiz')
+        return redirect(url_for('quiz'))
+
+    if not g.task:
+        flash('No such task')
+        return redirect(url_for('quiz'))
+
+    return render_template('results.html')
+
+
+@app.route('/question', methods=['GET', 'POST'])
+def question():
+    print(session)
+    
+    if not g.user:
+        return redirect(url_for('login'))
+
+    if not g.quiz:
+        flash('No such quiz')
+        return redirect(url_for('quiz'))
+
+    if not g.task:
+        flash('No such task')
         return redirect(url_for('quiz'))
 
     # if not g.task: # TODO
@@ -180,11 +331,15 @@ def question():
 
     if 'qid' not in session:
         session['qid'] = 1
+
+    assert 'tid' in session
+    tid = session['tid']
     
 
     form = QuestionForm()
 
     flash('Output is {}, {}, {}'.format(form.validate_on_submit(), form.answer, type(form.answer.data)))
+    
     if request.method == 'POST' and type(form.answer.data) == int:
         # answer_time
         answer_record_id = session['answer_record.id']
@@ -219,7 +374,7 @@ def question():
         # don't make it refresh.
         qid = session['qid'] # by default, it is zero.
         
-        if session['generate_new_question'] == True:
+        if session['generate_new_question'] == True or 'answer_record.id' not in session:
             # finish_current_question interpret it as the last question.
             a, b, c, d, e = [random.randint(10,99) for i in range(5)]
             # print(a, b, c, d, e)
@@ -238,11 +393,9 @@ def question():
             # answer_record.answer_time = datetime.now()
             a, b, c, d, e = answer_record.a, answer_record.b, answer_record.c, answer_record.d, answer_record.e
             
-
-
         return render_template('question.html', 
                             form=form,
                             qid=qid, 
-                            a=a, b=b, c=c, d=d, e=e,
+                            a=a, b=b, c=c, d=d, e=e, tid = tid,
                             title='Question {}'.format(qid))
 

@@ -8,3 +8,6 @@ class Config(object):
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     QUES_PER_PAGE = 1
+
+    @staticmethod
+    def init_app(app): pass

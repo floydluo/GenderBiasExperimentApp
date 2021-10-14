@@ -11,7 +11,7 @@
             {% if tid in [1, 2, 3] and qid >= 1 %}
                 <h4 class="ques-heading">{{a}}+{{b}}+{{c}}+{{d}}+ {{e}} <span>= ?</span> </h4>
                 <div class="options-div">
-                    {{ form.answer(placeholder="Your Answer", class="list-unstyled") }}
+                    {{ form.answer(placeholder="Your Answer", class="list-unstyled", autocomplete="off") }}
                     {% for error in form.answer.errors %}
                     <span style="color:red;"> {{ error }} </span>
                     {% endfor %}

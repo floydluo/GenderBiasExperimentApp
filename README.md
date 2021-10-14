@@ -1,6 +1,16 @@
 # Experimental Quiz App for Gender Bias Identification
 
+```shell
+export FLASK_DEBUG=1
+export FLASK_APP=main.py
+flask run
 
+
+## datebase issue
+flask db init
+flask db migrate -m'initial migration'
+flask db upgrade
+```
 
 Table of contents
 1. [About the project](#about-the-project)

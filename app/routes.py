@@ -9,7 +9,7 @@ from datetime import date, datetime
 
 
 MAX_QID = 5
-
+GROUP_SIZE = 2
 TID2TASKTYPE = {
     1: 'Piece Rate',
     2: 'Tournament',
@@ -89,11 +89,19 @@ def register():
     print(session)
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data) # fix the error.
+        user = User(username=form.username.data, 
+                    gender=form.gender.data, 
+                    email=form.email.data) # fix the error.
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
+
+        # add group info
         session['user.id'] = user.id
+        group = int(user.id - 1 / GROUP_SIZE) + 1
+        user.group = group
+        db.session.add(user)
+        db.session.commit()
 
         for i in CLEARLIST: 
             if i in session: session.pop(i)
@@ -153,7 +161,6 @@ def quiz():
         session['tid'] = 1
 
     tid = session['tid'] # exist under a quiz
-
     return render_template('quiz.html', title='Question {}'.format(g.quiz.quiz_name), tid = tid)
 
 
@@ -202,7 +209,7 @@ def task_end():
     db.session.commit()    
 
     session.pop('task.id')
-    session.pop('answer_record.id')
+    # session.pop('answer_record.id')
 
     if session['tid'] in [1, 2]:
         session['qid'] = 1
@@ -323,9 +330,6 @@ def question():
         flash('No such task')
         return redirect(url_for('quiz'))
 
-    # if not g.task: # TODO
-    #     return redirect(url_for('quiz'))
-
     if 'generate_new_question' not in session:
         session['generate_new_question'] = True 
 
@@ -334,26 +338,34 @@ def question():
 
     assert 'tid' in session
     tid = session['tid']
-    
+    # answer_record = AnswerRecord.query.filter_by(id = answer_record_id).first()
 
     form = QuestionForm()
-
     flash('Output is {}, {}, {}'.format(form.validate_on_submit(), form.answer, type(form.answer.data)))
     
     if request.method == 'POST' and type(form.answer.data) == int:
         # answer_time
-        answer_record_id = session['answer_record.id']
-        answer_record = AnswerRecord.query.filter_by(id = answer_record_id).first()
-        answer_record.answer_time = datetime.now()
+        # answer_record_id = session['answer_record.id']
+        # answer_record = AnswerRecord.query.filter_by(id = answer_record_id).first()
+        qid = session['qid']
+        a, b, c, d, e = session['integers']
+        correct_ans = session['correct_ans']
+        created_time = session['created_time']
+
+        answer_time = datetime.now()
         
         # user_ans
         # print(request.form['answer']
         # flash('Output is {}'.format(request.form['answer']))
-        answer = int(request.form['answer'])
-        answer_record.user_ans = answer
+        user_ans = int(request.form['answer'])
 
         # correct or not
-        answer_record.correct = True if answer == answer_record.correct_ans else False
+        correct = True if user_ans == created_time else False
+
+        # g.task
+        answer_record = AnswerRecord(qid = qid, a=a, b=b, c=c, d=d, e=e, correct_ans = correct_ans, 
+                                     created_time = created_time, answer_time = answer_time, user_ans = user_ans,
+                                     correct = correct, task = g.task)
 
         db.session.add(answer_record)
         db.session.commit()
@@ -379,23 +391,29 @@ def question():
             a, b, c, d, e = [random.randint(10,99) for i in range(5)]
             # print(a, b, c, d, e)
             correct_ans = sum([a, b, c, d, e])
-            answer_record = AnswerRecord(qid = qid, a=a, b=b, c=c, d=d, e=e, correct_ans = correct_ans, created_time = datetime.now())
-            db.session.add(answer_record)
-            db.session.commit()
+            created_time = datetime.now()
+            # answer_record = AnswerRecord(qid = qid, a=a, b=b, c=c, d=d, e=e, correct_ans = correct_ans, created_time = created_time)
+            # db.session.add(answer_record)
+            # db.session.commit()
 
-            session['answer_record.id'] = answer_record.id
+            session['integers'] = a, b, c, d, e
+            session['correct_ans'] = correct_ans
+            session['created_time'] = created_time
+
+            # session['answer_record.id'] = answer_record.id
+
             session['generate_new_question'] = False
         else:
             # keep using the current question
             flash('You are still in this question: {}'.format(qid))
-            answer_record_id = session['answer_record.id']
-            answer_record = AnswerRecord.query.filter_by(id = answer_record_id).first()
+            # answer_record_id = session['answer_record.id']
+            # answer_record = AnswerRecord.query.filter_by(id = answer_record_id).first()
             # answer_record.answer_time = datetime.now()
-            a, b, c, d, e = answer_record.a, answer_record.b, answer_record.c, answer_record.d, answer_record.e
+            a, b, c, d, e = session['integers'] # answer_record.a, answer_record.b, answer_record.c, answer_record.d, answer_record.e
             
         return render_template('question.html', 
-                            form=form,
-                            qid=qid, 
-                            a=a, b=b, c=c, d=d, e=e, tid = tid,
-                            title='Question {}'.format(qid))
+                                form=form,
+                                qid=qid, 
+                                a=a, b=b, c=c, d=d, e=e, tid = tid,
+                                title='Question {}'.format(qid))
 

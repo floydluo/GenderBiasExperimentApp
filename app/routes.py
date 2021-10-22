@@ -9,7 +9,7 @@ from datetime import date, datetime
 
 
 MAX_QID = 5
-GROUP_SIZE = 2
+GROUP_SIZE = 4
 TID2TASKTYPE = {
     1: 'Piece Rate',
     2: 'Tournament',
@@ -91,6 +91,8 @@ def register():
     if form.validate_on_submit():
         user = User(username=form.username.data, 
                     gender=form.gender.data, 
+                    state=form.state.data, 
+                    schoolyear=form.schoolyear.data, 
                     email=form.email.data) # fix the error.
         user.set_password(form.password.data)
         db.session.add(user)
@@ -166,7 +168,7 @@ def quiz():
 
 @app.route('/task-start', methods=['GET', 'POST'])
 def task_start():
-    print(session)
+    # print(session)
     flash('You are starting a task now')
 
     # generate a quiz, and a quiz id
@@ -183,12 +185,22 @@ def task_start():
     g.task = task
     
     session['task.id'] = task.id
+    
     if session['tid'] in [1, 2]:
         session['qid'] = 1
     elif session['tid'] in [3, 4]:
         session['qid'] = 0
     else:
         flash('Somehow, you are in trouble')
+
+    if session['tid'] in [1, 2, 3]:
+        col = 'rightnum{}'.format(session['tid'])
+        print(col)
+        session[col] = 0
+
+    if session['tid'] in [3, 4]:
+        session['choice{}'.format(session['tid'])] = None
+
     # print(session)
     return redirect(url_for('question'))
 
@@ -226,7 +238,7 @@ def task_end():
 
 @app.route('/task3-choice/<choice>', methods=['GET', 'POST'])
 def task3_choice(choice):
-    print(session)
+    # print(session)
 
     if not g.user:
         return redirect(url_for('login'))
@@ -252,9 +264,11 @@ def task3_choice(choice):
     elif choice == 'choice2':
         task.final_status = TID2TASKTYPE[2]
 
-
     db.session.add(task)
     db.session.commit()    
+
+    session['choice{}'.format(session['tid'])] = task.final_status 
+    print('choice{}'.format(session['tid']), session['choice{}'.format(session['tid'])])
 
     # session.pop('quiz.id')
     return redirect(url_for('question'))
@@ -262,7 +276,7 @@ def task3_choice(choice):
 
 @app.route('/quiz-task-end/<choice>', methods=['GET', 'POST'])
 def quiz_task_end(choice):
-    print(session)
+    # print(session)
 
     if not g.user:
         return redirect(url_for('login'))
@@ -286,6 +300,9 @@ def quiz_task_end(choice):
         task.final_status = TID2TASKTYPE[1]
     elif choice == 'choice2':
         task.final_status = TID2TASKTYPE[2]
+
+    session['choice{}'.format(session['tid'])] = task.final_status 
+    print('choice{}'.format(session['tid']), session['choice{}'.format(session['tid'])])
 
     quiz = g.quiz 
     quiz.end_time = dt 
@@ -312,12 +329,19 @@ def results():
         flash('No such task')
         return redirect(url_for('quiz'))
 
-    return render_template('results.html')
+    rightnum1 = session.get('rightnum1', None)
+    rightnum2 = session.get('rightnum2', None)
+    rightnum3 = session.get('rightnum3', None)
+    choice3 = session.get('choice3', None)
+    choice4 = session.get('choice4', None)
+    
+    return render_template('results.html', rightnum1 =rightnum1, rightnum2 = rightnum2, 
+                            rightnum3 = rightnum3, choice3 = choice3, choice4 = choice4, MAX_QID = MAX_QID)
 
 
 @app.route('/question', methods=['GET', 'POST'])
 def question():
-    print(session)
+    # print(session)
     
     if not g.user:
         return redirect(url_for('login'))
@@ -341,7 +365,7 @@ def question():
     # answer_record = AnswerRecord.query.filter_by(id = answer_record_id).first()
 
     form = QuestionForm()
-    flash('Output is {}, {}, {}'.format(form.validate_on_submit(), form.answer, type(form.answer.data)))
+    # flash('Output is {}, {}, {}'.format(form.validate_on_submit(), form.answer, type(form.answer.data)))
     
     if request.method == 'POST' and type(form.answer.data) == int:
         # answer_time
@@ -360,7 +384,11 @@ def question():
         user_ans = int(request.form['answer'])
 
         # correct or not
-        correct = True if user_ans == created_time else False
+        correct = True if user_ans == correct_ans else False
+
+        session['rightnum{}'.format(session['tid'])] += int(correct)
+
+        print('rightnum{}'.format(session['tid']), session['rightnum{}'.format(session['tid'])])
 
         # g.task
         answer_record = AnswerRecord(qid = qid, a=a, b=b, c=c, d=d, e=e, correct_ans = correct_ans, 
@@ -373,7 +401,7 @@ def question():
         # update qid
         session['qid'] += 1
         session['generate_new_question'] = True
-        print('Currrent QID is {}'.format(session['qid'] ))
+        # print('Currrent QID is {}'.format(session['qid'] ))
 
         new_qid = session['qid']
         if new_qid <= MAX_QID:

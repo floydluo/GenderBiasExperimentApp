@@ -12,6 +12,9 @@ class User(db.Model):
 
     # demograhics
     gender = db.Column(db.String(64), index=True)
+    state = db.Column(db.String(64), index=True)
+    schoolyear = db.Column(db.String(64), index=True)
+
     # age, race...
 
     # TODO: assign groups

@@ -5,13 +5,33 @@
         <img src="{{ url_for('static', filename='images/umd-campus.jpg') }}" class="home-img">
         <div class="info-div">
             {% if g.user %}
-                <h1>Welcome {{ g.user.username.upper() }}, </h1>
+                <h1>Great! {{ g.user.username.upper() }}, </h1>
             {% else %}
                 <h1>Sign In, Guest </h1>
             {% endif %}
-            <h4> Game Over! Have a break.</h4>
+
+            <h4> Nice Work! Have a break.</h4>
+
+
+            <h1> Summary</h1>
+            
             <!-- <a href="{{ url_for('question', qid=1)}}">Take the test</a> -->
-            <a href="{{ url_for('quiz')}}">Start Your Quiz</a>
+            <!-- <a href="{{ url_for('quiz')}}">Start Your Quiz</a> -->
+            
+            <h2> Task 1: Piece Rate</h2>
+            <div>Your Correct Answers: {{rightnum1}}/{{MAX_QID}}</div>
+
+
+            <h2> Task 2: Tournament</h2>
+            <div>Your Correct Answers: {{rightnum2}}/{{MAX_QID}}</div>
+
+
+            <h2> Task 3: Make Your Choice</h2>
+            <div>Your Choice is: {{choice3}}. Your Correct Answers: {{rightnum3}}/{{MAX_QID}}</div>
+
+            <h2> Task 4: Look Back</h2>
+            <div>Your Choice is: {{choice4}}.</div>
+
         </div>
     </div>
 {% endblock %}

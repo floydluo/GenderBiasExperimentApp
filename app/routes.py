@@ -7,8 +7,8 @@ from app import db
 import random
 from datetime import date, datetime 
 
-
-MAX_QID = 5
+TASKTIME = 300
+MAX_QID = 20
 GROUP_SIZE = 4
 TID2TASKTYPE = {
     1: 'Piece Rate',
@@ -137,7 +137,7 @@ def logout():
 
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
-    print(session)
+    # print(session)
     if not g.user:
         return redirect(url_for('login'))
 
@@ -185,6 +185,8 @@ def task_start():
     g.task = task
     
     session['task.id'] = task.id
+    session['remainSecond'] = TASKTIME
+    session['taskStartTime'] = dt
     
     if session['tid'] in [1, 2]:
         session['qid'] = 1
@@ -207,7 +209,7 @@ def task_start():
 
 @app.route('/task-end', methods=['GET', 'POST'])
 def task_end():
-    print(session)
+    # print(session)
 
     dt = datetime.now()
     flash('Congrats! You current task is finished!')
@@ -378,6 +380,14 @@ def question():
 
         answer_time = datetime.now()
         
+        ################
+        # update remainSecond
+        past_sec = answer_time - session['taskStartTime'] 
+        past_sec = past_sec.seconds
+        session['remainSecond'] = TASKTIME - past_sec
+        ################
+
+        ################
         # user_ans
         # print(request.form['answer']
         # flash('Output is {}'.format(request.form['answer']))
@@ -413,6 +423,7 @@ def question():
         # maybe new, maybe refresh
         # don't make it refresh.
         qid = session['qid'] # by default, it is zero.
+        remainSecond = session['remainSecond'] 
         
         if session['generate_new_question'] == True or 'answer_record.id' not in session:
             # finish_current_question interpret it as the last question.
@@ -440,6 +451,7 @@ def question():
             a, b, c, d, e = session['integers'] # answer_record.a, answer_record.b, answer_record.c, answer_record.d, answer_record.e
             
         return render_template('question.html', 
+                                remainSecond = remainSecond,
                                 form=form,
                                 qid=qid, 
                                 a=a, b=b, c=c, d=d, e=e, tid = tid,

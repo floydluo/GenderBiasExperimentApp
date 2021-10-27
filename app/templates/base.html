@@ -22,9 +22,9 @@
         <ul class="nav-links">
             <li> <a href="{{ url_for('home') }}"> EconField (Home) </a> </li>
             {% if not g.user %}
-            <li> <a href="{{ url_for('login') }}"> Login </a> </li>
+                <li> <a href="{{ url_for('register') }}"> Register </a> </li>
             {% else %}
-            <li> <a href="{{ url_for('logout') }}"> Logout </a> </li>
+                <li> <a href="{{ url_for('logout') }}"> Logout </a> </li>
             {% endif %}
         </ul>
     </nav>
@@ -42,10 +42,8 @@
     {% endif %}
     {% endwith %}
 
-
-
     {% block content %}{% endblock %}
-
+    {% block scripts %}{% endblock %}
     </body>
 </html>
 

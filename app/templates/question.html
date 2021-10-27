@@ -2,42 +2,81 @@
 
 
 {% block content %}
-    <div class="ques-div">
-        <form method="post" novalidate>
-            <h2 class="qnum">Question {{qid}}</h2>
-            <div class="dotted-spaced"></div>
-            <hr>
+    
 
-            {% if tid in [1, 2, 3] and qid >= 1 %}
-                <h4 class="ques-heading">{{a}}+{{b}}+{{c}}+{{d}}+ {{e}} <span>= ?</span> </h4>
-                <div class="options-div">
-                    {{ form.answer(placeholder="Your Answer", class="list-unstyled", autocomplete="off") }}
-                    {% for error in form.answer.errors %}
-                    <span style="color:red;"> {{ error }} </span>
-                    {% endfor %}
-                </div>
-                <hr>
-                <div>{{ form.submit(class="btn btn-primary btn-lg sub-btn") }}</div>
-            {% elif tid == 3 and qid == 0 %} 
-                <h4 class="ques-heading">For this task, do you choose the payoff method</h4>
-                <div class="info2-div">
-                    <a class="mytype" href="{{ url_for('task3_choice', choice = 'choice1')}}">Method 1: Piece Rate</a> 
-                    <a class="mytype" href="{{ url_for('task3_choice', choice = 'choice2')}}">Method 2: Tournament</a> 
-            {% elif tid == 4 %} 
-                <h4 class="ques-heading">For task 1, do you choose the payoff method</h4>
-                <div class="info2-div">
-                    <a class="mytype" href="{{ url_for('quiz_task_end', choice = 'choice1')}}">Method 1: Piece Rate</a> 
-                    <a class="mytype" href="{{ url_for('quiz_task_end', choice = 'choice2')}}">Method 2: Tournament</a> 
-                </div>
-            {% else %}
-                <h4 class="ques-heading">You are in trouble here, the TID is {{tid}}</h4>
-            {% endif %}
+    {% if remainSecond > 0 %}
+        <div class="timer">
+            <p id="time"></p>
+        </div>
+        <div class="ques-div">
             
-        </form>
-        <!-- <span class="check-circle">
-            <i class="fas fa-check-circle"></i>
-        </span> -->
+
+            <form method="post" novalidate>
+                <h2 class="qnum">Question {{qid}}</h2>
+                <div class="dotted-spaced"></div>
+                <hr>
+
+                {% if tid in [1, 2, 3] and qid >= 1 %}
+                    <h4 class="ques-heading">{{a}}+{{b}}+{{c}}+{{d}}+ {{e}} <span>= ?</span> </h4>
+                    <div class="options-div">
+                        {{ form.answer(placeholder="Your Answer", class="list-unstyled", autocomplete="off") }}
+                        {% for error in form.answer.errors %}
+                        <span style="color:red;"> {{ error }} </span>
+                        {% endfor %}
+                    </div>
+                    <hr>
+                    <div>{{ form.submit(class="btn btn-primary btn-lg sub-btn") }}</div>
+                {% elif tid == 3 and qid == 0 %} 
+                    <h4 class="ques-heading">For this task, do you choose the payoff method</h4>
+                    <div class="info2-div">
+                        <a class="mytype" href="{{ url_for('task3_choice', choice = 'choice1')}}">Method 1: Piece Rate</a> 
+                        <a class="mytype" href="{{ url_for('task3_choice', choice = 'choice2')}}">Method 2: Tournament</a> 
+                {% elif tid == 4 %} 
+                    <h4 class="ques-heading">For task 1, do you choose the payoff method</h4>
+                    <div class="info2-div">
+                        <a class="mytype" href="{{ url_for('quiz_task_end', choice = 'choice1')}}">Method 1: Piece Rate</a> 
+                        <a class="mytype" href="{{ url_for('quiz_task_end', choice = 'choice2')}}">Method 2: Tournament</a> 
+                    </div>
+                {% else %}
+                    <h4 class="ques-heading">You are in trouble here, the TID is {{tid}}</h4>
+                {% endif %}
+                
+            </form>
+            
+    {% else %}
+        <div class="info2-div">
+
+            <div class="timer">
+                <p id="time"></p>
+            </div>
+            <div>Time up, go to next task</div>
+        </div>
+    {% endif %}
     </div>
+
+    
 
 {% endblock %}
 
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+<script>
+    // var pastSecond = {{ pastSecond }};
+    var Seconds = {{ remainSecond }};
+</script>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-87062131-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+<script type="text/javascript" src="http://api.forismatic.com/api/1.0/?method=getQuote&amp;format=jsonp&amp;lang=en&amp;jsonp=parseQuote" async></script>
+
+{% endblock %}
